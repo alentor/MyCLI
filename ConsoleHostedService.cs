@@ -15,42 +15,40 @@ namespace cliTest0
         private readonly IConfiguration _configuration;
         private readonly ConsoleArgs _consoleArgs;
 
+        private readonly CommandLineApplication _app;
+
         public ConsoleHostedService(ILogger<ConsoleHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, ConsoleArgs consoleArgs)
         {
             _logger = logger;
             _appLifetime = appLifetime;
             _configuration = configuration;
             _consoleArgs = consoleArgs;
-            var app = new CommandLineApplication();
-            app.HelpOption();
-            app.Option<string>("-s|--subject <SUBJECT>", "The subject", CommandOptionType.SingleValue);
+            _app = new CommandLineApplication();
+            _app.HelpOption();
+            _app.Option<string>("-s|--subject <SUBJECT>", "The subject", CommandOptionType.SingleValue);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _appLifetime.ApplicationStarted.Register(() =>
             {
-                Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        _logger.LogInformation("Hello World, bellow is the logLevel for 'dafault'");
-                        _logger.LogInformation(_configuration.GetSection("Logging").GetSection("LogLevel").GetValue<string>("Default"));
-                        if (_consoleArgs.Args.Length > 0)
-                            _logger.LogInformation(_consoleArgs.Args[0]);
-                        // Simulate real work is being done
-                        await Task.Delay(1000);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Unhandled exception!");
-                    }
-                    finally
-                    {
-                        // Stop the application once the work is done
-                        _appLifetime.StopApplication();
-                    }
-                });
+                    _app.Execute(_consoleArgs.Args);
+                    // _logger.LogInformation("Hello World, bellow is the logLevel for 'dafault'");
+                    // _logger.LogInformation(_configuration.GetSection("Logging").GetSection("LogLevel").GetValue<string>("Default"));
+                    // if (_consoleArgs.Args.Length > 0)
+                    //     _logger.LogInformation(_consoleArgs.Args[0]);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unhandled exception!");
+                }
+                finally
+                {
+                    // Stop the application once the work is done
+                    _appLifetime.StopApplication();
+                }
             });
             return Task.CompletedTask;
         }
