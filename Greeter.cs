@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace cliTest0
 {
-
     public interface IGreeter
     {
         void Greet(string name, string language);
@@ -23,15 +22,14 @@ namespace cliTest0
             _logger.LogInformation("Constructed!");
         }
 
-        public void Greet(string name, string language = "english")
+        public void Greet(string name, string language)
         {
-            string greeting;
-            switch (language)
+            string greeting = language switch
             {
-                case "english": greeting = "Hello {0}"; break;
-                case "spanish": greeting = "Hola {0}"; break;
-                default: throw new InvalidOperationException("validation should have caught this");
-            }
+                "english" => $"Hello {name}",
+                "spanish" => $"Hola {name}",
+                _ => throw new InvalidOperationException("validation should have caught this"),
+            };
             _console.WriteLine(greeting, name);
         }
     }
